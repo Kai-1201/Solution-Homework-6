@@ -7,5 +7,5 @@ public abstract class SupportHandler {
         this.nextHandler = next;
         return next;
     }
-
+    public abstract boolean handle(String issue);
 }
