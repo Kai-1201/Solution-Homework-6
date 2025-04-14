@@ -1,26 +1,24 @@
 package Chain_of_Responsibility;
 
+import java.util.Arrays;
+
 public class Main {
     public static void main(String[] args) {
-        SupportHandler faqHandler = new FAQBotHandler();
-        SupportHandler juniorHandler = new JuniorSupportHandler();
-        SupportHandler seniorHandler = new SeniorSupportHandler();
+        SupportHandler faq = new HandlerLogger(new FAQBotHandler());
+        SupportHandler junior = new HandlerLogger(new JuniorSupportHandler());
+        SupportHandler senior = new HandlerLogger(new SeniorSupportHandler());
 
-        faqHandler.setNext(juniorHandler).setNext(seniorHandler);
-
-        String[] testIssues = {
-                "password_reset",
-                "billing_issue",
-                "data_loss",
-                "unknown_issue"
-        };
-
-        for (String issue : testIssues) {
-            System.out.println("\nProcessing issue: " + issue);
-            boolean wasHandled = faqHandler.handle(issue);
-
-            if (!wasHandled) {
-                System.out.println("No handler could process: " + issue);
+        SupportHandler chain = DynamicChainConfigurator.createChain(
+                Arrays.asList(faq, junior, senior)
+        );
+        String[] issues = {"password_reset", "unknown_problem", "billing_issue"};
+        for (String issue : issues) {
+            try {
+                if (!chain.handle(issue)) {
+                    throw new UnresolvedIssueException(issue);
+                }
+            } catch (UnresolvedIssueException e) {
+                System.err.println("ERROR: " + e.getMessage());
             }
         }
     }
